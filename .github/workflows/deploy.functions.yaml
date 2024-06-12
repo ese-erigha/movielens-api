@@ -3,7 +3,7 @@ name: Deploy Function
 on:
   push:
     branches:
-      - main
+      - deploy-functions
   workflow_dispatch:
 
 jobs:
@@ -15,7 +15,7 @@ jobs:
       PROJECT_ID: kfajbfeftfaepqhslhyi
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: supabase/setup-cli@v1
         with:
