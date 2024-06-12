@@ -2,7 +2,7 @@ import { getClient } from "./supabase.client.ts";
 import { Movie } from "./database.types.ts";
 import { buildPagination } from "./pagination.ts";
 
-export async function findPopularMovies(
+export async function findTopRatedMovies(
   page: number,
   size: number,
 ): Promise<Movie[]> {

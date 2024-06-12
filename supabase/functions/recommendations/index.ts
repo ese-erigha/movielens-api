@@ -5,22 +5,9 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 /// <reference types="https://esm.sh/@supabase/functions-js/src/edge-runtime.d.ts" />
 
-/* To invoke locally:
-
-  1. Run `supabase start` (see: https://supabase.com/docs/reference/cli/supabase-start)
-  2. Make an HTTP request:
-
-  curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/recommender' \
-    --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' \
-    --header 'Content-Type: application/json' \
-    --data '{"name":"Functions"}'
-
-*/
 // @deno-types="npm:@types/express@4.17.15"
-import express from "npm:express@4.18.2";
+import express, { Application, Request, Response } from "npm:express@4.18.2";
 import cors from "npm:cors";
-import { getClient } from "../_shared/supabase.client.ts";
-import { User } from "../_shared/database.types.ts";
 import {
   exceptionHandler,
   pageNotFoundExceptionHandler,
@@ -29,38 +16,61 @@ import {
   recommendMoviesForUser,
   recommendSimilarMovies,
 } from "../_shared/recommender.service.ts";
+import { findTopRatedMovies } from "../_shared/movie.service.ts";
+import { PAGINATION_LIMIT } from "../_shared/pagination.ts";
+import { MovieResponseDto } from "../_shared/movie.dto.ts";
+import { MovieMapper } from "../_shared/mapper.types.ts";
 
-const getUserById = async (uid: string): Promise<User | null> => {
-  const client = getClient();
-
-  const resp = await client.from("users").select("*").eq("id", uid).single()
-    .throwOnError();
-  return resp.data;
-};
-
-const app = express();
+const app: Application = express();
 app.use(express.json());
 app.use(cors());
 app.use(exceptionHandler);
 const port = 3000;
 
-app.get("/recommendations/user/:userId/:page", async (req, res) => {
-  const { userId, page } = req.params;
-  const movies = await recommendMoviesForUser(
-    parseInt(userId),
-    parseInt(page),
-  );
-  res.send({ data: { movies } });
-});
+type ResponseData = { data: { movies: MovieResponseDto[] } };
 
-app.get("/recommendations/movie/:movieId/:page", async (req, res) => {
-  const { movieId, page } = req.params;
-  const movies = await recommendSimilarMovies(
-    parseInt(movieId),
-    parseInt(page),
-  );
-  res.send({ data: { movies } });
-});
+app.get(
+  "/recommendations/user/:userId/:page",
+  async (
+    req: Request<{ userId: number; page: number }>,
+    res: Response<ResponseData>,
+  ) => {
+    const { userId, page } = req.params;
+    const movies = await recommendMoviesForUser(
+      userId,
+      page,
+    );
+    res.status(200).send({ data: { movies } });
+  },
+);
+
+app.get(
+  "/recommendations/movie/:movieId/:page",
+  async (
+    req: Request<{ movieId: number; page: number }>,
+    res: Response<ResponseData>,
+  ) => {
+    const { movieId, page } = req.params;
+    const movies = await recommendSimilarMovies(
+      movieId,
+      page,
+    );
+    res.send({ data: { movies } });
+  },
+);
+
+app.get(
+  "/recommendations/movies/top-rated/:page",
+  async (
+    req: Request<{ page: number }>,
+    res: Response<ResponseData>,
+  ) => {
+    const { page } = req.params;
+    const movies = await findTopRatedMovies(page, PAGINATION_LIMIT);
+    const result = MovieMapper.fromMovieType(movies);
+    res.send({ data: { movies: result } });
+  },
+);
 
 app.use("*", pageNotFoundExceptionHandler);
 app.listen(port, () => {

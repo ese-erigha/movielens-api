@@ -1,10 +1,15 @@
 import { getUserById } from "./user.service.ts";
-import { findById, findManyByIds, findPopularMovies } from "./movie.service.ts";
+import {
+  findById,
+  findManyByIds,
+  findTopRatedMovies,
+} from "./movie.service.ts";
 import { CBR_Prediction, Movie, SVD_Prediction } from "./database.types.ts";
 import { findMoviesForUser } from "./svd.service.ts";
 import { findSimilarMovies } from "./cbr.service.ts";
 import { PAGINATION_LIMIT } from "./pagination.ts";
 import { NotFoundException } from "./http.exceptions.ts";
+import { MovieMapper } from "./mapper.types.ts";
 
 export async function recommendMoviesForUser(
   userId: number,
@@ -14,8 +19,8 @@ export async function recommendMoviesForUser(
   const user = await getUserById(userId);
 
   if (!user) {
-    const movies: Movie[] = await findPopularMovies(page, size);
-    return movies;
+    const movies: Movie[] = await findTopRatedMovies(page, size);
+    return MovieMapper.fromMovieType(movies);
   }
 
   const recommendations = await findMoviesForUser(userId, page, size);
@@ -28,7 +33,7 @@ export async function recommendMoviesForUser(
   }
 
   const movies = await findManyByIds(movieIds);
-  return movies;
+  return MovieMapper.fromMoviePrediction(movies, recommendationMap);
 }
 
 export async function recommendSimilarMovies(
@@ -52,5 +57,5 @@ export async function recommendSimilarMovies(
   }
 
   const movies = await findManyByIds(movieIds);
-  return movies;
+  return MovieMapper.fromMoviePrediction(movies, recommendationMap);
 }
