@@ -55,7 +55,7 @@ app.get(
       movieId,
       page,
     );
-    res.send({ data: { movies } });
+    res.status(200).send({ data: { movies } });
   },
 );
 
@@ -68,7 +68,7 @@ app.get(
     const { page } = req.params;
     const movies = await findTopRatedMovies(page, PAGINATION_LIMIT);
     const result = MovieMapper.fromMovieType(movies);
-    res.send({ data: { movies: result } });
+    res.status(200).send({ data: { movies: result } });
   },
 );
 
