@@ -3,7 +3,7 @@ name: Deploy Function
 on:
   push:
     branches:
-      - prod-function
+      - main
   workflow_dispatch:
 
 jobs:
