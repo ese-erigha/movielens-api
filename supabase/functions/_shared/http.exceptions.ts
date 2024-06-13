@@ -46,6 +46,7 @@ export class NotFoundException {
   }
 }
 
+// deno-lint-ignore no-explicit-any
 export function errorHandler(error: any) {
   if (error.response) {
     // The request was made and the server responded with a status code
