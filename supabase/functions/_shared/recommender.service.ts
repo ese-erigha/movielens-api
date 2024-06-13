@@ -7,20 +7,30 @@ import {
 import { CBR_Prediction, Movie, SVD_Prediction } from "./database.types.ts";
 import { findMoviesForUser } from "./svd.service.ts";
 import { findSimilarMovies } from "./cbr.service.ts";
-import { PAGINATION_LIMIT } from "./pagination.ts";
+import { getPaginationOutput, PAGINATION_LIMIT } from "./pagination.ts";
 import { NotFoundException } from "./http.exceptions.ts";
 import { MovieMapper } from "./mapper.types.ts";
+import { getMovie } from "./tmdb.service.ts";
+import { MovieResponseDto } from "./movie.dto.ts";
+
+async function fetchMoviesFromTMBD(movies: Movie[]) {
+  const tmdbMovies = await Promise.all(
+    movies.map(({ tmdb_id }) => getMovie(tmdb_id.toString())),
+  );
+
+  return tmdbMovies;
+}
 
 export async function recommendMoviesForUser(
   userId: number,
   page: number = 1,
   size: number = PAGINATION_LIMIT,
-) {
+): Promise<MovieResponseDto> {
   const user = await getUserById(userId);
 
   if (!user) {
-    const movies: Movie[] = await findTopRatedMovies(page, size);
-    return MovieMapper.fromMovieType(movies);
+    return fetchTopRatedMovies(page, size);
+    // return MovieMapper.fromMovieType(movies);
   }
 
   const recommendations = await findMoviesForUser(userId, page, size);
@@ -33,14 +43,20 @@ export async function recommendMoviesForUser(
   }
 
   const movies = await findManyByIds(movieIds);
-  return MovieMapper.fromMoviePrediction(movies, recommendationMap);
+  const results = await fetchMoviesFromTMBD(movies);
+  return {
+    results,
+    page,
+    ...getPaginationOutput(size),
+  };
+  // return MovieMapper.fromMoviePrediction(movies, recommendationMap);
 }
 
 export async function recommendSimilarMovies(
   movieId: number,
   page: number = 1,
   size: number = PAGINATION_LIMIT,
-) {
+): Promise<MovieResponseDto> {
   const movie = await findById(movieId);
   if (!movie) {
     throw new NotFoundException();
@@ -57,5 +73,25 @@ export async function recommendSimilarMovies(
   }
 
   const movies = await findManyByIds(movieIds);
-  return MovieMapper.fromMoviePrediction(movies, recommendationMap);
+  const results = await fetchMoviesFromTMBD(movies);
+  return {
+    results,
+    page,
+    ...getPaginationOutput(size),
+  };
+  // return MovieMapper.fromMoviePrediction(movies, recommendationMap);
+}
+
+export async function fetchTopRatedMovies(
+  page: number,
+  size: number,
+): Promise<MovieResponseDto> {
+  const movies = await findTopRatedMovies(page, size);
+  const results = await fetchMoviesFromTMBD(movies);
+
+  return {
+    results,
+    page,
+    ...getPaginationOutput(size, 9742),
+  };
 }

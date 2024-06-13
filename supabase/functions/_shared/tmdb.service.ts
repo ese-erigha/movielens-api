@@ -5,7 +5,7 @@ import {
   Movie,
   MoviesResponse,
   PersonnelResponse,
-} from "./types.ts";
+} from "./tmdb.types.ts";
 import { axiosInstance } from "./http.client.ts";
 
 const MOVIE_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/";

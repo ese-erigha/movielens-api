@@ -13,13 +13,13 @@ import {
   pageNotFoundExceptionHandler,
 } from "../_shared/exception.handler.ts";
 import {
+  fetchTopRatedMovies,
   recommendMoviesForUser,
   recommendSimilarMovies,
 } from "../_shared/recommender.service.ts";
-import { findTopRatedMovies } from "../_shared/movie.service.ts";
+
 import { PAGINATION_LIMIT } from "../_shared/pagination.ts";
 import { MovieResponseDto } from "../_shared/movie.dto.ts";
-import { MovieMapper } from "../_shared/mapper.types.ts";
 
 const app: Application = express();
 app.use(express.json());
@@ -27,20 +27,18 @@ app.use(cors());
 app.use(exceptionHandler);
 const port = 3000;
 
-type ResponseData = { data: { movies: MovieResponseDto[] } };
-
 app.get(
   "/recommendations/user/:userId/:page",
   async (
     req: Request<{ userId: number; page: number }>,
-    res: Response<ResponseData>,
+    res: Response<MovieResponseDto>,
   ) => {
     const { userId, page } = req.params;
-    const movies = await recommendMoviesForUser(
+    const response = await recommendMoviesForUser(
       userId,
       page,
     );
-    res.status(200).send({ data: { movies } });
+    res.status(200).send(response);
   },
 );
 
@@ -48,14 +46,14 @@ app.get(
   "/recommendations/movie/:movieId/:page",
   async (
     req: Request<{ movieId: number; page: number }>,
-    res: Response<ResponseData>,
+    res: Response<MovieResponseDto>,
   ) => {
     const { movieId, page } = req.params;
-    const movies = await recommendSimilarMovies(
+    const response = await recommendSimilarMovies(
       movieId,
       page,
     );
-    res.status(200).send({ data: { movies } });
+    res.status(200).send(response);
   },
 );
 
@@ -63,12 +61,11 @@ app.get(
   "/recommendations/movies/top-rated/:page",
   async (
     req: Request<{ page: number }>,
-    res: Response<ResponseData>,
+    res: Response<MovieResponseDto>,
   ) => {
     const { page } = req.params;
-    const movies = await findTopRatedMovies(page, PAGINATION_LIMIT);
-    const result = MovieMapper.fromMovieType(movies);
-    res.status(200).send({ data: { movies: result } });
+    const response = await fetchTopRatedMovies(page, PAGINATION_LIMIT);
+    res.status(200).send(response);
   },
 );
 
