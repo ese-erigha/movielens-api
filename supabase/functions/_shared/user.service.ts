@@ -6,8 +6,8 @@ export async function getUserById(id: number): Promise<User | null> {
 
   const resp = await client.from("users").select("*").eq("id", id).single();
   if (resp.error) {
-    console.log({ error: resp.error });
-    return null;
+    if (resp.error.code === "PGRST116") return null;
+    throw new Error(resp.error.message, { cause: resp.error.code });
   }
 
   return resp.data;

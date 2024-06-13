@@ -13,10 +13,10 @@ import { getMovie } from "./tmdb.service.ts";
 import { MovieResponseDto } from "./movie.dto.ts";
 
 async function fetchMoviesFromTMBD(movies: Movie[]) {
-  const tmdbMovies = await Promise.all(
-    movies.map(({ tmdb_id }) => getMovie(tmdb_id.toString())),
-  );
+  const ids = movies.map((movie) => movie.tmdb_id.toString());
+  console.log(ids);
 
+  const tmdbMovies = await Promise.all(ids.map((id) => getMovie(id)));
   return tmdbMovies;
 }
 
