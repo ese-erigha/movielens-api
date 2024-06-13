@@ -11,12 +11,21 @@ import { getPaginationOutput, PAGINATION_LIMIT } from "./pagination.ts";
 import { NotFoundException } from "./http.exceptions.ts";
 import { getMovie } from "./tmdb.service.ts";
 import { MovieResponseDto } from "./movie.dto.ts";
+import { Movie as TMDBMovie } from "./tmdb.types.ts";
 
-async function fetchMoviesFromTMBD(movies: Movie[]) {
+async function fetchMoviesFromTMDB(movies: Movie[]) {
   const ids = movies.map((movie) => movie.tmdb_id.toString());
-  console.log(ids);
 
-  const tmdbMovies = await Promise.all(ids.map((id) => getMovie(id)));
+  const tmdbMovies: TMDBMovie[] = [];
+  const results = await Promise.allSettled(ids.map((id) => getMovie(id)));
+
+  results.forEach((result) => {
+    if (result.status === "fulfilled") {
+      tmdbMovies.push(result.value);
+    } else {
+      console.log({ status: result.status, reason: result.reason });
+    }
+  });
   return tmdbMovies;
 }
 
@@ -41,7 +50,7 @@ export async function recommendMoviesForUser(
   }
 
   const movies = await findManyByIds(movieIds);
-  const results = await fetchMoviesFromTMBD(movies);
+  const results = await fetchMoviesFromTMDB(movies);
   return {
     results,
     page,
@@ -70,7 +79,7 @@ export async function recommendSimilarMovies(
   }
 
   const movies = await findManyByIds(movieIds);
-  const results = await fetchMoviesFromTMBD(movies);
+  const results = await fetchMoviesFromTMDB(movies);
   return {
     results,
     page,
@@ -83,7 +92,7 @@ export async function fetchTopRatedMovies(
   size: number,
 ): Promise<MovieResponseDto> {
   const movies = await findTopRatedMovies(page, size);
-  const results = await fetchMoviesFromTMBD(movies);
+  const results = await fetchMoviesFromTMDB(movies);
 
   return {
     results,
