@@ -13,17 +13,25 @@ import { getMovie } from "./tmdb.service.ts";
 import { MovieResponseDto } from "./movie.dto.ts";
 import { Movie as TMDBMovie } from "./tmdb.types.ts";
 
-async function fetchMoviesFromTMDB(movies: Movie[]) {
-  const ids = movies.map((movie) => movie.tmdb_id.toString());
+async function fetchMovie(movie: Movie) {
+  try {
+    const res = await getMovie(movie.tmdb_id.toString());
+    return res;
+  } catch (error) {
+    console.log({ id: movie.tmdb_id, error });
+    throw error;
+  }
+}
 
+async function fetchMoviesFromTMDB(movies: Movie[]) {
   const tmdbMovies: TMDBMovie[] = [];
-  const results = await Promise.allSettled(ids.map((id) => getMovie(id)));
+  const results = await Promise.allSettled(
+    movies.map((movie) => fetchMovie(movie)),
+  );
 
   results.forEach((result) => {
     if (result.status === "fulfilled") {
       tmdbMovies.push(result.value);
-    } else {
-      console.log({ status: result.status, reason: result.reason });
     }
   });
   return tmdbMovies;
