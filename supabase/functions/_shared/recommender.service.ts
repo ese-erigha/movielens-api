@@ -8,7 +8,7 @@ import { CBR_Prediction, Movie, SVD_Prediction } from "./database.types.ts";
 import { findMoviesForUser } from "./svd.service.ts";
 import { findSimilarMovies } from "./cbr.service.ts";
 import { getPaginationOutput, PAGINATION_LIMIT } from "./pagination.ts";
-import { NotFoundException } from "./http.exceptions.ts";
+import { errorHandler, NotFoundException } from "./http.exceptions.ts";
 import { getMovie } from "./tmdb.service.ts";
 import { MovieResponseDto } from "./movie.dto.ts";
 import { Movie as TMDBMovie } from "./tmdb.types.ts";
@@ -18,7 +18,7 @@ async function fetchMovie(movie: Movie) {
     const res = await getMovie(movie.tmdb_id.toString());
     return res;
   } catch (error) {
-    console.log({ id: movie.tmdb_id, error });
+    console.log({ id: movie.tmdb_id, ...errorHandler(error) });
     throw error;
   }
 }
