@@ -1,4 +1,4 @@
-export const PAGINATION_LIMIT = 10;
+export const PAGINATION_LIMIT = 15;
 export function buildPagination(page: number, size: number) {
   const start = (page - 1) * size;
 
