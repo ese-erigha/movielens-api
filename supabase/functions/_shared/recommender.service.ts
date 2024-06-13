@@ -9,7 +9,6 @@ import { findMoviesForUser } from "./svd.service.ts";
 import { findSimilarMovies } from "./cbr.service.ts";
 import { getPaginationOutput, PAGINATION_LIMIT } from "./pagination.ts";
 import { NotFoundException } from "./http.exceptions.ts";
-import { MovieMapper } from "./mapper.types.ts";
 import { getMovie } from "./tmdb.service.ts";
 import { MovieResponseDto } from "./movie.dto.ts";
 
@@ -30,7 +29,6 @@ export async function recommendMoviesForUser(
 
   if (!user) {
     return fetchTopRatedMovies(page, size);
-    // return MovieMapper.fromMovieType(movies);
   }
 
   const recommendations = await findMoviesForUser(userId, page, size);
@@ -49,7 +47,6 @@ export async function recommendMoviesForUser(
     page,
     ...getPaginationOutput(size),
   };
-  // return MovieMapper.fromMoviePrediction(movies, recommendationMap);
 }
 
 export async function recommendSimilarMovies(
@@ -79,7 +76,6 @@ export async function recommendSimilarMovies(
     page,
     ...getPaginationOutput(size),
   };
-  // return MovieMapper.fromMoviePrediction(movies, recommendationMap);
 }
 
 export async function fetchTopRatedMovies(
