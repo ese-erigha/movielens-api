@@ -27,6 +27,8 @@ export type Movie = {
   budget: number;
 };
 
+export type TMDBMovie = Movie;
+
 export type MoviesResponse = {
   page: number;
   results: Movie[];
