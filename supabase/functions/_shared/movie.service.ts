@@ -24,8 +24,11 @@ export async function findManyByIds(ids: number[]) {
 
 export async function findById(id: number) {
   const client = getClient();
-  const resp = await client.from("movies").select("*").eq("id", id).single()
-    .throwOnError();
+  const resp = await client.from("movies").select("*").eq("id", id).single();
+  if (resp.error) {
+    if (resp.error.code === "PGRST116") return null;
+    throw new Error(resp.error.message, { cause: resp.error.code });
+  }
 
   return resp.data;
 }
