@@ -3,13 +3,17 @@ import { TMDBMovie } from "./tmdb.types.ts";
 import { MovieItemDto } from "./movie.dto.ts";
 import { SVD_Prediction } from "./database.types.ts";
 
-const clampNumber = (
+function clampNumber(
   num: number,
   currMax: number = 1.00,
   range: number = 5.00,
-) => {
+) {
   return (num / currMax) * range;
-};
+}
+
+function sorter(itemA: MovieItemDto, itemB: MovieItemDto) {
+  return itemB.match_score - itemA.match_score;
+}
 
 export class MovieMapper {
   public static fromTMDB(
@@ -21,7 +25,7 @@ export class MovieMapper {
         ...movie,
         match_score: movieMap[movie.id].average_rating,
       };
-    });
+    }).sort(sorter);
   }
 
   public static fromCBR(
@@ -37,7 +41,7 @@ export class MovieMapper {
         ...movie,
         match_score: clampNumber(score),
       };
-    });
+    }).sort(sorter);
   }
 
   public static fromSVD(
@@ -52,6 +56,6 @@ export class MovieMapper {
         ...movie,
         match_score: prediction.score,
       };
-    });
+    }).sort(sorter);
   }
 }
