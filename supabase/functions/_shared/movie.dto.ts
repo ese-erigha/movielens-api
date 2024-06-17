@@ -3,7 +3,10 @@ import { TMDBMovie } from "./tmdb.types.ts";
 
 export type MappedMovie = Omit<Movie, "average_rating"> & { score: number };
 
-export type MovieItemDto = TMDBMovie & { match_score: number };
+export type MovieItemDto = TMDBMovie & {
+  match_score: number;
+  local_movie_id: number;
+};
 
 export type MovieResponseDto = {
   results: Array<MovieItemDto>;

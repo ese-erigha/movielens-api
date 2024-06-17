@@ -21,9 +21,11 @@ export class MovieMapper {
     movieMap: Record<number, Movie>,
   ): MovieItemDto[] {
     return movies.map((movie) => {
+      const localMovie: Movie = movieMap[movie.id];
       return {
         ...movie,
-        match_score: movieMap[movie.id].average_rating,
+        match_score: localMovie.average_rating,
+        local_movie_id: localMovie.id, // id of the recommended movie on our local database
       };
     }).sort(sorter);
   }
@@ -36,10 +38,10 @@ export class MovieMapper {
     return movies.map((movie) => {
       const simMovieId = tmdbbSimMap[movie.id];
       const prediction = simCbrMap[simMovieId];
-      const score = prediction.score;
       return {
         ...movie,
-        match_score: clampNumber(score),
+        match_score: clampNumber(prediction.score),
+        local_movie_id: simMovieId, // id of the recommended movie on our local database
       };
     }).sort(sorter);
   }
@@ -55,6 +57,7 @@ export class MovieMapper {
       return {
         ...movie,
         match_score: prediction.score,
+        local_movie_id: movieId, // id of the recommended movie
       };
     }).sort(sorter);
   }

@@ -60,13 +60,13 @@ export async function recommendMoviesForUser(
   });
 
   const movies = await findManyByIds(movieIds);
-  const tmdbbMovieMap: Record<number, number> = {};
-  movies.forEach((movie) => tmdbbMovieMap[movie.tmdb_id] = movie.id);
+  const tmdbMovieMap: Record<number, number> = {};
+  movies.forEach((movie) => tmdbMovieMap[movie.tmdb_id] = movie.id);
 
   const tmdbMovies = await fetchMoviesFromTMDB(movies);
 
   return {
-    results: MovieMapper.fromSVD(tmdbMovies, tmdbbMovieMap, movieSvdMap),
+    results: MovieMapper.fromSVD(tmdbMovies, tmdbMovieMap, movieSvdMap),
     page,
     ...getPaginationOutput(size),
   };
@@ -93,13 +93,13 @@ export async function recommendSimilarMovies(
   });
 
   const simMovies = await findManyByIds(simMovieIds);
-  const tmdbbSimMap: Record<number, number> = {};
-  simMovies.forEach((simMovie) => tmdbbSimMap[simMovie.tmdb_id] = simMovie.id);
+  const tmdbSimMap: Record<number, number> = {};
+  simMovies.forEach((simMovie) => tmdbSimMap[simMovie.tmdb_id] = simMovie.id);
 
   const tmdbMovies = await fetchMoviesFromTMDB(simMovies);
 
   return {
-    results: MovieMapper.fromCBR(tmdbMovies, tmdbbSimMap, simCbrMap),
+    results: MovieMapper.fromCBR(tmdbMovies, tmdbSimMap, simCbrMap),
     page,
     ...getPaginationOutput(size),
   };
